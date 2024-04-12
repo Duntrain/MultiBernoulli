@@ -1,0 +1,33 @@
+we are at iteration 999, current loss 3.5116166159887694 and we break
+current loss 3.5116166159887694
+-----------------start to train model_clone-----------------
+we are trying to work with topo: [1, 0, 2] 
+we are at iteration 1199, current loss 1.980163693625519 and we break
+min shd 0, best thresholds:[0.84], shd thres = 0.3: 0
+---good news---
+find better loss 1.980163693625519 current topo [1, 0, 2]
+min shd: 0, best thresholds:[0.84], shd thres = 0.3: 0
+current matrix
+ [[0.    0.    1.995]
+ [2.256 0.    0.841]
+ [0.    0.    0.   ]]
+
+-------------
+-----------------start to train model_clone-----------------
+we are trying to work with topo: [0, 1, 2] 
+we are at iteration 999, current loss 3.517991986829451 and we break
+min shd 1, best thresholds:[0.84], shd thres = 0.3: 1
+-----------------start to train model_clone-----------------
+we are trying to work with topo: [1, 2, 0] 
+we are at iteration 999, current loss 2.082134124739439 and we break
+min shd 1, best thresholds:[0.45, 1.75], shd thres = 0.3: 1
+-----------------start to train model_clone-----------------
+we are trying to work with topo: [2, 0, 1] 
+we are at iteration 1199, current loss 3.4488592459962493 and we break
+min shd 3, best thresholds:[0.05, 0.78, 0.8], shd thres = 0.3: 3
+We reach the number of chances to search large space, it is 0
+final output 
+ [[0.    0.    1.995]
+ [2.256 0.    0.841]
+ [0.    0.    0.   ]]
+{'fdr': 0.0, 'tpr': 1.0, 'fpr': 0.0, 'shd': 0, 'nnz': 3}
