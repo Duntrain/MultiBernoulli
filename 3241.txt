@@ -1,0 +1,142 @@
+3241
+
+
+True W 
+[[  0.          16.82520444   0.           0.          13.28070433]
+ [  0.           0.         -18.4168545    0.           0.        ]
+ [  0.           0.           0.           0.           0.        ]
+ [  0.           0.           0.           0.          18.23737035]
+ [  0.         -14.46329015   0.           0.           0.        ]]  
+ True B 
+ [[0. 1. 0. 0. 1.]
+ [0. 0. 1. 0. 0.]
+ [0. 0. 0. 0. 0.]
+ [0. 0. 0. 0. 1.]
+ [0. 1. 0. 0. 0.]] 
+ True topo 
+ [0, 3, 4, 1, 2] 
+
+current topo 
+ [0, 1, 2, 3, 4], 
+ current score 
+ -2.1253803753950886
+current topo 
+ [0, 1, 2, 4, 3], 
+ current score 
+ -2.125380357760038
+current topo 
+ [0, 1, 3, 2, 4], 
+ current score 
+ -2.1253804104082814
+current topo 
+ [0, 1, 3, 4, 2], 
+ current score 
+ -2.125380391229879
+current topo 
+ [0, 1, 4, 2, 3], 
+ current score 
+ -2.1253803568972183
+current topo 
+ [0, 1, 4, 3, 2], 
+ current score 
+ -2.1253803578107098
+current topo 
+ [0, 2, 1, 3, 4], 
+ current score 
+ -2.1253803750766638
+current topo 
+ [0, 2, 1, 4, 3], 
+ current score 
+ -2.125380357441613
+current topo 
+ [0, 2, 3, 1, 4], 
+ current score 
+ -2.1253803707231813
+current topo 
+ [0, 2, 3, 4, 1], 
+ current score 
+ -2.125380357820687
+current topo 
+ [0, 2, 4, 1, 3], 
+ current score 
+ -2.125380369638995
+current topo 
+ [0, 2, 4, 3, 1], 
+ current score 
+ -2.125380360948721
+current topo 
+ [0, 3, 1, 2, 4], 
+ current score 
+ -2.1253803726200946
+current topo 
+ [0, 3, 1, 4, 2], 
+ current score 
+ -2.1253803534416926
+current topo 
+ [0, 3, 2, 1, 4], 
+ current score 
+ -2.125380370714051
+current topo 
+ [0, 3, 2, 4, 1], 
+ current score 
+ -2.1253803578115567
+current topo 
+ [0, 3, 4, 1, 2], 
+ current score 
+ -2.1253803798989495
+current topo 
+ [0, 3, 4, 2, 1], 
+ current score 
+ -2.1253804164441727
+current topo 
+ [0, 4, 1, 2, 3], 
+ current score 
+ -2.1253803567882055
+current topo 
+ [0, 4, 1, 3, 2], 
+ current score 
+ -2.125380357701697
+current topo 
+ [0, 4, 2, 1, 3], 
+ current score 
+ -2.125380426435165
+current topo 
+ [0, 4, 2, 3, 1], 
+ current score 
+ -2.125380417744891
+current topo 
+ [0, 4, 3, 1, 2], 
+ current score 
+ -2.1253804924621558
+current topo 
+ [0, 4, 3, 2, 1], 
+ current score 
+ -2.125380529007379
+current topo 
+ [1, 0, 2, 3, 4], 
+ current score 
+ -2.1253803753942937
+current topo 
+ [1, 0, 2, 4, 3], 
+ current score 
+ -2.125380357759243
+current topo 
+ [1, 0, 3, 2, 4], 
+ current score 
+ -2.125380410407486
+current topo 
+ [1, 0, 3, 4, 2], 
+ current score 
+ -2.1253803912290836
+current topo 
+ [1, 0, 4, 2, 3], 
+ current score 
+ -2.1253803568964234
+current topo 
+ [1, 0, 4, 3, 2], 
+ current score 
+ -2.125380357809915
+current topo 
+ [1, 2, 0, 3, 4], 
+ current score 
+ -2.1253803751691422
