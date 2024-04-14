@@ -97,7 +97,7 @@ if __name__ == '__main__':
     n, d, s0 = 1000000, 3, 2
     graph_type, sem_type = 'ER', 'logistic'
     B_true = utils.simulate_dag(d, s0, graph_type)
-    W_true = utils.simulate_parameter(B_true, w_ranges=((-30.0, -10), (10, 30)))
+    W_true = utils.simulate_parameter(B_true, w_ranges=((-2.0, -0.5), (0.5, 2)))
     X = utils.simulate_linear_sem(W_true, n, sem_type)
     
     
