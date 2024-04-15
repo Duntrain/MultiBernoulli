@@ -82,15 +82,26 @@ def get_conditional_prob(X, idx_a, idx_b):
         X_cond = np.hstack((X[:,idx_a],X[:,idx_b]))
         prob_dict[name] = np.sum(np.all(X_cond == M[i,:], axis=1))/np.sum(np.all(X_cond[:,len_a:] == M[i,len_a:], axis=1))
     return prob_dict
+def get_numerator(l, idx):
+            # Resultant list of valid vectors
+        result = []
+        len_idx = len(idx)
+        for r in range(0,len_idx+1,2):
+            for indices in itertools.combinations(idx, r):
+                vector = np.zeros(l, dtype=int)
+                vector[list(set(idx)-set(indices))] = 1
+                result.append(vector)
+        M = np.array(result)
+        name_list =  []
+        for i in range(M.shape[0]):
+            name_list.append(str(M[i,:])+'|'+str([]))
+        return name_list
 
-def get_f(prob_list,idx):
-        l = int(math.log2(len(prob_list)))
-
-        def get_numerator(l, idx):
+def get_denominator(l, idx):
             # Resultant list of valid vectors
             result = []
             len_idx = len(idx)
-            for r in range(0,len_idx+1,2):
+            for r in range(1,len_idx+1,2):
                 for indices in itertools.combinations(idx, r):
                     vector = np.zeros(l, dtype=int)
                     vector[list(set(idx)-set(indices))] = 1
@@ -100,21 +111,17 @@ def get_f(prob_list,idx):
             for i in range(M.shape[0]):
                 name_list.append(str(M[i,:])+'|'+str([]))
             return name_list
-        def get_denominator(l, idx):
-            # Resultant list of valid vectors
-            result = []
-            len_idx = len(idx)
-            for r in range(1,len_idx+1,2):
-                for indices in itertools.combinations(idx, r):
-                    vector = np.zeros(l, dtype=int)
-                    vector[list(indices)] = 1
-                    result.append(vector)
-            M = np.array(result)
-            name_list =  []
-            for i in range(M.shape[0]):
-                name_list.append(str(M[i,:])+'|'+str([]))
-            return name_list
-        
+
+def get_name_list(l,idx):
+    numerator_name = get_numerator(l = l,idx = idx)
+    denominator_name = get_denominator(l = l,idx = idx)
+    name_list = {}
+    name_list['numerator'] = numerator_name
+    name_list['denominator'] = denominator_name
+    print(name_list)
+
+def get_f(prob_list,idx):
+        l = int(math.log2(len(prob_list)))
         numerator_name = get_numerator(l=  l,idx = idx)
         denominator_name = get_denominator(l = l,idx = idx)
         numerator = 1
@@ -127,6 +134,10 @@ def get_f(prob_list,idx):
             denominator *= prob_list[name]
 
         return np.log(numerator/denominator)
+def get_cov(X):
+     mean_X = np.mean(X, axis = 0)
+     X_centerized = X - mean_X
+     return np.mean(np.prod(X_centerized,axis= 1))
 
 if __name__ == '__main__':
     import utils
@@ -141,34 +152,12 @@ if __name__ == '__main__':
     graph_type, sem_type = 'ER', 'logistic'
 
     # B_true = utils.simulate_dag(d, s0, graph_type)
-    # W_true = np.array([[0, -2, 2], [0, 0, 0], [0, 0, 0]])
-    # topo = [0,1,2]
-    # j = 2
+    W_true = np.array([[0, 10, 0], [0, 0, 10], [0, 0, 0]])
+    topo = [0,1,2]
+    j = 2
     
 
-    # # W_true = utils.simulate_parameter(B_true, w_ranges=((-30.0, -10), (10, 30)))
-    # X = utils.simulate_linear_sem(W_true, n, sem_type)
-    # score, dict_coef, v = regress(X = X ,topo = topo ,j = j)
-    # print(f"score: {score}")
-    # print("dict_coef: ")
-    # pprint.pprint(dict_coef)
-    # print(f"v: {v}")
-
-    # prob_list = get_conditional_prob(X, [0,1,2], [])
-    # print("prob_list: ")
-    # pprint.pprint(prob_list)# print all elements in prob_list, how to do it?
-
-    # print(f"f[0,1,2]->[0,1]: {get_f(prob_list, [0,1,2])}")
-    # print(f"f[0,2]->[0]: {get_f(prob_list, [0,2])}")
-    # print(f"f[1,2]->[1]: {get_f(prob_list, [1,2])}")
-    
-
-
-
-    W_true = np.array([[0, -2, 0, 2], [0, 0, 1, 0], [0, 0, 0, 0.5],[0, 0, 0, 0]])
-    topo = [0,1,2,3]
-    j = 3
-
+    # W_true = utils.simulate_parameter(B_true, w_ranges=((-30.0, -10), (10, 30)))
     X = utils.simulate_linear_sem(W_true, n, sem_type)
     score, dict_coef, v = regress(X = X ,topo = topo ,j = j)
     print(f"score: {score}")
@@ -176,11 +165,39 @@ if __name__ == '__main__':
     pprint.pprint(dict_coef)
     print(f"v: {v}")
 
-    prob_list = get_conditional_prob(X, [0,1,2,3], [])
+    prob_list = get_conditional_prob(X, [0,1,2], [])
     print("prob_list: ")
     pprint.pprint(prob_list)# print all elements in prob_list, how to do it?
 
-    print(f"f[0,1,2,3]->[0,1,2]: {get_f(prob_list, [0,1,2,3])}")
-    print(f"f[0,3]->[0]: {get_f(prob_list, [0,3])}")
-    print(f"f[1,3]->[1]: {get_f(prob_list, [1,3])}")
-    print(f"f[2,3]->[2]: {get_f(prob_list, [2,3])}")
+    print(f"f[0,1,2]->[0,1]: {get_f(prob_list, [0,1,2])}")
+    print(f"f[0,2]->[0]: {get_f(prob_list, [0,2])}")
+    print(f"f[1,2]->[1]: {get_f(prob_list, [1,2])}")
+    print(f"f[2]->const: {get_f(prob_list, [2])}")
+    print(f"cov: {get_cov(X)}")
+
+
+
+    # W_true = np.array([[0, -2, 0, 2], [0, 0, 1, 0], [0, 0, 0, 0.5],[0, 0, 0, 0]])
+    # W_true = np.array([[0, -2, 2, 0], [0, 0, 0, 1], [0, 0, 0, 0.5],[0, 0, 0, 0]])
+    # topo = [0,1,2,3]
+    # j = 3
+
+    # X = utils.simulate_linear_sem(W_true, n, sem_type)
+    # score, dict_coef, v = regress(X = X ,topo = topo ,j = j)
+    # print(f"score: {score}")
+    # print("dict_coef: ")
+    # pprint.pprint(dict_coef)
+    # print(f"v: {v}")
+
+    # prob_list = get_conditional_prob(X, [0,1,2,3], [])
+    # print("prob_list: ")
+    # pprint.pprint(prob_list)# print all elements in prob_list, how to do it?
+
+    # print(f"f[0,1,2,3]->[0,1,2]: {get_f(prob_list, [0,1,2,3])}")
+    # print(f"f[0,1,3]->[0,1]: {get_f(prob_list, [0,1,3])}")
+    # print(f"f[0,2,3]->[0,2]: {get_f(prob_list, [0,2,3])}")
+    # print(f"f[1,2,3]->[1,2]: {get_f(prob_list, [1,2,3])}")
+    # print(f"f[0,3]->[0]: {get_f(prob_list, [0,3])}")
+    # print(f"f[1,3]->[1]: {get_f(prob_list, [1,3])}")
+    # print(f"f[2,3]->[2]: {get_f(prob_list, [2,3])}")
+    # print(f"f[3]->const: {get_f(prob_list, [3])}")
