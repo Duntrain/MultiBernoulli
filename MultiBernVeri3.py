@@ -49,6 +49,7 @@ def regress(X,topo,j):
             dict_coef['const'] = reg.coef_[0][i]
         else:
             dict_coef[str(idx_col[(i-1)])] = reg.coef_[0][i]
+    
     for pos_i, sublist in enumerate(idx_col):
             for ele in sublist:
                 v[ele]+=abs(reg.coef_[0][pos_i+1])
@@ -83,7 +84,7 @@ def get_conditional_prob(X, idx_a, idx_b):
         prob_dict[name] = np.sum(np.all(X_cond == M[i,:], axis=1))/np.sum(np.all(X_cond[:,len_a:] == M[i,len_a:], axis=1))
     return prob_dict
 def get_numerator(l, idx):
-            # Resultant list of valid vectors
+        # Resultant list of valid vectors
         result = []
         len_idx = len(idx)
         for r in range(0,len_idx+1,2):
@@ -118,7 +119,16 @@ def get_name_list(l,idx):
     name_list = {}
     name_list['numerator'] = numerator_name
     name_list['denominator'] = denominator_name
-    print(name_list)
+    #print(name_list) 
+    print(f'idx set: {idx}')
+    for name, lists in name_list.items():
+         print(f"{name}:")
+         for ele in lists:
+             print(ele)
+         
+
+    
+        
 
 def get_f(prob_list,idx):
         l = int(math.log2(len(prob_list)))
@@ -151,9 +161,10 @@ if __name__ == '__main__':
     n, d, s0 = 2000000, 3, 2
     graph_type, sem_type = 'ER', 'logistic'
 
-    # B_true = utils.simulate_dag(d, s0, graph_type)
-    W_true = np.array([[0, 10, 0], [0, 0, 10], [0, 0, 0]])
+    B_true = utils.simulate_dag(d, s0, graph_type)
+    W_true = np.array([[0, 1, -0.5], [0, 0, -1], [0, 0, 0]])
     topo = [0,1,2]
+    # topo = [2,1,0]
     j = 2
     
 
@@ -175,29 +186,35 @@ if __name__ == '__main__':
     print(f"f[2]->const: {get_f(prob_list, [2])}")
     print(f"cov: {get_cov(X)}")
 
-
-
-    # W_true = np.array([[0, -2, 0, 2], [0, 0, 1, 0], [0, 0, 0, 0.5],[0, 0, 0, 0]])
+    '''
+    
+    
+    W_true = np.array([[0, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0.5],[0, 0, 0, 0]])
+    # W_true = np.array([[0, -2, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0.5],[0, 0, 0, 0]])
     # W_true = np.array([[0, -2, 2, 0], [0, 0, 0, 1], [0, 0, 0, 0.5],[0, 0, 0, 0]])
     # topo = [0,1,2,3]
     # j = 3
+    # topo = [1,2,3,0]
+    # j = 3
 
-    # X = utils.simulate_linear_sem(W_true, n, sem_type)
-    # score, dict_coef, v = regress(X = X ,topo = topo ,j = j)
-    # print(f"score: {score}")
-    # print("dict_coef: ")
-    # pprint.pprint(dict_coef)
-    # print(f"v: {v}")
 
-    # prob_list = get_conditional_prob(X, [0,1,2,3], [])
-    # print("prob_list: ")
-    # pprint.pprint(prob_list)# print all elements in prob_list, how to do it?
+    X = utils.simulate_linear_sem(W_true, n, sem_type)
+    score, dict_coef, v = regress(X = X ,topo = topo ,j = j)
+    print(f"score: {score}")
+    print("dict_coef: ")
+    pprint.pprint(dict_coef)
+    print(f"v: {v}")
 
-    # print(f"f[0,1,2,3]->[0,1,2]: {get_f(prob_list, [0,1,2,3])}")
-    # print(f"f[0,1,3]->[0,1]: {get_f(prob_list, [0,1,3])}")
-    # print(f"f[0,2,3]->[0,2]: {get_f(prob_list, [0,2,3])}")
-    # print(f"f[1,2,3]->[1,2]: {get_f(prob_list, [1,2,3])}")
-    # print(f"f[0,3]->[0]: {get_f(prob_list, [0,3])}")
-    # print(f"f[1,3]->[1]: {get_f(prob_list, [1,3])}")
-    # print(f"f[2,3]->[2]: {get_f(prob_list, [2,3])}")
-    # print(f"f[3]->const: {get_f(prob_list, [3])}")
+    prob_list = get_conditional_prob(X, [0,1,2,3], [])
+    print("prob_list: ")
+    pprint.pprint(prob_list)# print all elements in prob_list, how to do it?
+
+    print(f"f[0,1,2,3]->[0,1,2]: {get_f(prob_list, [0,1,2,3])}")
+    print(f"f[0,1,3]->[0,1]: {get_f(prob_list, [0,1,3])}")
+    print(f"f[0,2,3]->[0,2]: {get_f(prob_list, [0,2,3])}")
+    print(f"f[1,2,3]->[1,2]: {get_f(prob_list, [1,2,3])}")
+    print(f"f[0,3]->[0]: {get_f(prob_list, [0,3])}")
+    print(f"f[1,3]->[1]: {get_f(prob_list, [1,3])}")
+    print(f"f[2,3]->[2]: {get_f(prob_list, [2,3])}")
+    print(f"f[3]->const: {get_f(prob_list, [3])}")
+    '''
