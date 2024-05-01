@@ -110,13 +110,6 @@ def check_cross_term_topo(topo, prob_matrix):
                             idx_partial=idx_partial)
                 if not np.isclose(f,0,atol=1e-9):
                         cross_term_dict_details[str(idx_full)+'|'+str(idx_partial)] = f
-                        
-                        
-
-                # print(f"id_full: {idx_full} \nidx_partial: {idx_partial} \n f: {f}")
-                # # get_name_list(l = d, idx = idx_full)
-                # # get_name_list(l = d, idx = idx_partial)
-                # print('-----------------------------------')
     
     return cross_term_dict_details
 
@@ -183,11 +176,11 @@ if __name__ == '__main__':
     
     # W is chain with five node
     # W = np.array([[0,1,0,0.5,0],[0,0,-1,0,0],[0,0,0,0.5,0],[0,0,0,0,1],[0,0,0,0,0]])
-
-    W = generate_random_W(d = 4)
+    d = 5
+    W = generate_random_W(d = d)
     
     # W = np.array([[0,0,1],[0,0,-1],[0,0,0]])
-    d = W.shape[0]
+    # d = W.shape[0]
     binary_matrix = generate_binary_matrix(d)
     p0 = np.random.uniform(low = 0.3, high = 0.7, size = (d))
     print(f"p0: {p0}")
