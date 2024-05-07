@@ -4,6 +4,51 @@ import math
 import pprint
 import copy
 import warnings
+
+def layer_decomposition(W):
+    B = (W==0)
+    d = W.shape[0]
+    layer_decom = []
+    layer_decoms = []
+    count = 0
+    Omega = list(range(d))
+    while bool(Omega):
+        layer = list(np.where(B.all(axis=0))[0])
+        layer_decoms.append(layer)
+        if count!=0:
+            layer = [x for x in layer if (x not in layer_decoms[count - 1])]
+        for i in layer:
+            B[i,:] = True
+        layer_decom.append(layer)
+        Omega = [x for x in Omega if (x not in layer)]
+        count += 1
+    return layer_decom
+
+def is_no_cross_term_dict_consistent_with_layers(layer_decom,no_cross_term_dict):
+    for topo in no_cross_term_dict.keys():
+        topo = eval(topo)
+        if not is_consistent_topo_with_layers(topo,layer_decom):
+            return False
+    return True
+def is_consistent_topo_with_layers(topo, layer_decom):
+    # Create a dictionary to map each node to its index in the topological sort
+    index_in_topo = {node: i for i, node in enumerate(topo)}
+    
+    # Check if all nodes in each layer appear before any node in the next layer
+    last_index_in_previous_layers = -1  # No nodes before the first layer
+    for layer in layer_decom:
+        # Find the minimum and maximum indices of the current layer nodes in the topological sort
+        min_index = min(index_in_topo[node] for node in layer)
+        max_index = max(index_in_topo[node] for node in layer)
+        
+        # Ensure all nodes in this layer are after all nodes in previous layers
+        if min_index <= last_index_in_previous_layers:
+            return False
+        
+        # Update last index for the next layer comparison
+        last_index_in_previous_layers = max_index
+
+    return True
 def get_numerator(l, idx):
         # Resultant list of valid vectors
         result = []
@@ -110,6 +155,11 @@ def get_all_f(prob_matrix):
                     else:
                         all_f[str(idx_full)+'|'+str(idx_partial)] = 0
     return all_f
+
+
+
+
+
 
 def check_cross_term_topo_fast(topo, prob_matrix, all_f):
     # this time, we return whether the topo has cross term or not, and we don't calculate the f
@@ -248,7 +298,7 @@ def remove_edges(matrix, num_edges_to_remove = -1,indices = None):
         # Generate all combinations of edges to be removed
         if indices is None:
             indices = upper_triangle_indices(d)
-            for num_edges_to_remove in range(len(indices)-(d-1), 0, -1):
+            for num_edges_to_remove in range(len(indices), 0, -1):
                 for combination in itertools.combinations(indices, num_edges_to_remove):
                     # Create a copy of the matrix to modify
                     modified_matrix = copy.deepcopy(matrix)
@@ -284,337 +334,51 @@ def is_supmatrix_list(A,matrices_list):
             return True
     return False
 
-def test1(d):
-    # Test with a fully connected matrix
-    np.random.seed(1)
-    i=0
-    W = generate_random_W(d = d)
+def test1(d = 4):
+    np.random.seed(0)
+    W = generate_random_W(d)
+    # W = np.array([[0, 0, 0, 0],
+    #               [0, 0, 0,-1],
+    #               [0, 0, 0, 1],
+    #               [0, 0, 0, 0]])
     binary_matrix = generate_binary_matrix(d)
     p0 = np.random.uniform(low = 0.3, high = 0.7, size = (d))
     print(f"p0: {p0}")
-    prob_matrix = prob(binary_matrix,p0,W)
-    # print(f"prob_matrix: {prob_matrix}")
-    # cross_term_dict,no_cross_term_dict = check_cross_term(prob_matrix,verbose=True)
-    # pprint.pprint(cross_term_dict)
-    # pprint.pprint(no_cross_term_dict)
-    # print(f"There are {len(cross_term_dict)} topologies with cross term")
-    # print(f"There are {len(no_cross_term_dict)} topologies without cross term")
-    # print('-----------------------------------')
     resulting_matrices = remove_edges(W, num_edges_to_remove = -1)
     success_matrice = []
     for matrix in resulting_matrices:
-        if len(success_matrice)>0:
-            if not is_supmatrix_list(matrix,success_matrice):
-                prob_matrix = prob(binary_matrix,p0,matrix)
-                cross_term_dict,no_cross_term_dict = check_cross_term_fast(prob_matrix,verbose=False,use_all_f=True)
-                if len(no_cross_term_dict) == 1:
-                    print('-----------------------------------')
-                    print(f"Matrix {i} is the case:")
-                    print(matrix)
-                    success_matrice.append(matrix)
-        else:
-            prob_matrix = prob(binary_matrix,p0,matrix)
-            cross_term_dict,no_cross_term_dict = check_cross_term_fast(prob_matrix,verbose=False,use_all_f=True)
-            if len(no_cross_term_dict) == 1:
-                print('-----------------------------------')
-                print(f"Matrix {i} is the case:")
-                print(matrix)
-                success_matrice.append(matrix)
-
-        if i%50 == 0:
-            print(f"Finished search {i}th matrices")
-        i+=1
-    print("finished")
-def test2():
-    # Test with a specific matrix
-    np.random.seed(1)
-    # W = np.array([  [0,0,0, 1, 1],
-    #                 [0,0,0,-2, 0],
-    #                 [0,0,0, 1, 0],
-    #                 [0,0,0, 0, 0],
-    #                 [0,0,0, 0, 0]
-                    
-    #                 ])
-    # W = np.array([  [0,0,0, 1, 0, 0],
-    #                 [0,0,0,-1, 0, 0],
-    #                 [0,0,0, 1, 0, 0],
-    #                 [0,0,0, 0,-1, 1],
-    #                 [0,0,0, 0, 0, 1],
-    #                 [0,0,0, 0, 0, 0]])
-                  
-    # W = np.array([[0,0,0,0.5,0,1],
-    #               [0,0,0,-1,0,-1],
-    #               [0,0,0,0.5,0,1],
-    #               [0,0,0,0,1,-1],
-    #               [0,0,0,0,0,1],
-    #               [0,0,0,0,0,0]])
-    # W = np.array([[0,0,0, 1, 1, 0, 0],
-    #               [0,0,0,-1, 0, 0, 0],
-    #               [0,0,0, 1, 0, 0, 0],
-    #               [0,0,0, 0,-1, 0, 0],
-    #               [0,0,0, 0, 0, 1, 0],
-    #               [0,0,0, 0, 0, 0, 1],
-    #               [0,0,0, 0, 0, 0, 0]])
-    W = np.array([  [0,0,0, 1, 1, 0, 0, 0],
-                    [0,0,0,-1, 0, 0, 0, 0],
-                    [0,0,0, 2, 0, 0, 0, 0],
-                    [0,0,0, 0,-1,-2, 0, 0],
-                    [0,0,0, 0, 0, 1, 0, 0],
-                    [0,0,0, 0, 0, 0,-2, 0],
-                    [0,0,0, 0, 0, 0, 0, 1],
-                    [0,0,0, 0, 0, 0, 0, 0]])
-    # W[0,4] = 1
-    # W[3,5] = -1
-    # W[4,6] = 0.5
-    # W[4,6] = 0.5
-
-    print(W)
-    # W[0,7] = 1
-    d = W.shape[0]
-    binary_matrix = generate_binary_matrix(d)
-    p0 = np.random.uniform(low = 0.3, high = 0.7, size = (d))
-    print(f"p0: {p0}")
-    prob_matrix = prob(binary_matrix,p0,W)
-    # print(f"prob_matrix: {prob_matrix}")
-    cross_term_dict,no_cross_term_dict = check_cross_term(prob_matrix,verbose=False,use_all_f=True)
-    # pprint.pprint(cross_term_dict)
-    pprint.pprint(no_cross_term_dict)
-    print(f"There are {len(cross_term_dict)} topologies with cross term")
-    print(f"There are {len(no_cross_term_dict)} topologies without cross term")
-
-def test2_1(topo):
-    np.random.seed(1)
-    W = np.array([  [0,0,0, 1, 1, 0, 0, 0],
-                    [0,0,0,-1, 0, 0, 0, 0],
-                    [0,0,0, 2, 0, 0, 0, 0],
-                    [0,0,0, 0,-1,-2, 0, 0],
-                    [0,0,0, 0, 0, 1, 0, 0],
-                    [0,0,0, 0, 0, 0,-2, 0],
-                    [0,0,0, 0, 0, 0, 0, 1],
-                    [0,0,0, 0, 0, 0, 0, 0]])
-    d = W.shape[0]
-    binary_matrix = generate_binary_matrix(d)
-    p0 = np.random.uniform(low = 0.3, high = 0.7, size = (d))
-    print(f"p0: {p0}")
-    prob_matrix = prob(binary_matrix,p0,W)
-    cross_term_dict_details = check_cross_term_topo(topo = topo, prob_matrix=prob_matrix)
-    pprint.pprint(cross_term_dict_details)
-
-
-# def test3(d):
-#     i=0
-#     np.random.seed(1)
-#     W = generate_random_W(d = d)
-#     binary_matrix = generate_binary_matrix(d)
-#     p0 = np.random.uniform(low = 0.3, high = 0.7, size = (d))
-#     print(f"p0: {p0}")
-#     prob_matrix = prob(binary_matrix,p0,W)
-#     # print(f"prob_matrix: {prob_matrix}")
-#     cross_term_dict,no_cross_term_dict = check_cross_term(prob_matrix,verbose=False)
-#     pprint.pprint(cross_term_dict)
-#     pprint.pprint(no_cross_term_dict)
-#     print(f"There are {len(cross_term_dict)} topologies with cross term")
-#     print(f"There are {len(no_cross_term_dict)} topologies without cross term")
-#     print('-----------------------------------')
-#     number_edges_to_keep = int(d-1)
-#     number_edges_to_move = int(d*(d-1)/2)-number_edges_to_keep
-#     resulting_matrices = remove_edges(W, num_edges_to_remove = number_edges_to_move)
-    
-#     for matrix in resulting_matrices:
-#         prob_matrix = prob(binary_matrix,p0,matrix)
-#         cross_term_dict,no_cross_term_dict = check_cross_term(prob_matrix,verbose=False)
-#         if len(no_cross_term_dict) == 1:
-#             print('-----------------------------------')
-#             print(f"Matrix {i} is the case:")
-#             print(matrix)
-#         i+=1
-#     print("finished")
-
-
-def test3(idx_full,idx_partial):
-    np.random.seed(1)
-    W = np.array([  [0,0,0, 2,-2, 0],
-                    [0,0,0,-1, 0, 0],
-                    [0,0,0, 1, 0, 0],
-                    [0,0,0, 0,-2, 0],
-                    [0,0,0, 0, 0, 1],
-                    [0,0,0, 0, 0, 0]])
-
-    # W = np.array([[0,0,0, 1, 0, 1, 0],
-    #               [0,0,0,-1, 0, 0, 0],
-    #               [0,0,0, 1, 0, 0, 0],
-    #               [0,0,0, 0,-1, 0, 0],
-    #               [0,0,0, 0, 0, 1, 0],
-    #               [0,0,0, 0, 0, 0, 1],
-    #               [0,0,0, 0, 0, 0, 0]])
-    # W = np.array([  [0,0,0, 1, 1, 0, 0, 0],
-    #                 [0,0,0,-1, 0, 0, 0, 0],
-    #                 [0,0,0, 2, 0, 0, 0, 0],
-    #                 [0,0,0, 0,-1,-2, 0, 0],
-    #                 [0,0,0, 0, 0, 1, 0, 0],
-    #                 [0,0,0, 0, 0, 0,-2, 0],
-    #                 [0,0,0, 0, 0, 0, 0, 1],
-    #                 [0,0,0, 0, 0, 0, 0, 0]])
-    d = W.shape[0]
-    binary_matrix = generate_binary_matrix(d)
-    p0 = np.random.uniform(low = 0.3, high = 0.7, size = (d))
-    print(f"p0: {p0}")
-    prob_matrix = prob(binary_matrix,p0,W)
-    f = get_f(binary_matrix=binary_matrix, prob_matrix=prob_matrix, idx_full=idx_full, idx_partial=idx_partial)
-    print(f"id_full: {idx_full} \nidx_partial: {idx_partial} \n f: {f}")
-
-
-
-def test4():
-    i=0
-    np.random.seed(2)
-    W = np.array([[0,0,0, 1, 0, 1, 0,-1],
-                  [0,0,0,-1, 0, 0, 0, 1],
-                  [0,0,0, 1, 0, 0, 0, 1],
-                  [0,0,0, 0,-1, 0, 0,-1],
-                  [0,0,0, 0, 0, 1, 0,-1],
-                  [0,0,0, 0, 0, 0, 1,-1],
-                  [0,0,0, 0, 0, 0, 0,-1],
-                  [0,0,0, 0, 0, 0, 0, 0]])
-    # W = np.array([[0,0,0, 1, 0, 1, 1],
-    #               [0,0,0,-1, 0, 0,-1],
-    #               [0,0,0, 1, 0, 0,-1],
-    #               [0,0,0, 0,-1, 0, 1],
-    #               [0,0,0, 0, 0, 1,-1],
-    #               [0,0,0, 0, 0, 0, 1],
-    #               [0,0,0, 0, 0, 0, 0]])
-    # W = np.array([[0,0,0,1,0,1],
-    #               [0,0,0,-1,0,-1],
-    #               [0,0,0,1,0,1],
-    #               [0,0,0,0,1,-1],
-    #               [0,0,0,0,0,1],
-    #               [0,0,0,0,0,0]])
-    # W = np.array([[0,0,0,1,1],
-    #               [0,0,0,-2,-1],
-    #               [0,0,0,1,1],
-    #               [0,0,0,0,-1],
-    #                 [0,0,0,0,0]
-    #              ])
-    d = W.shape[0]
-    binary_matrix = generate_binary_matrix(d)
-    p0 = np.random.uniform(low = 0.3, high = 0.7, size = (d))
-    print(f"p0: {p0}")
-    # prob_matrix = prob(binary_matrix,p0,W)
-    # number_edges_to_keep = int(d-1)
-    # number_edges_to_move = int(d*(d-1)/2)-number_edges_to_keep
-    number_edges_to_move = -1
-    indices = [(i,d-1) for i in range(0,d-1)]
-    resulting_matrices = remove_edges(W, num_edges_to_remove = number_edges_to_move,indices=indices)
-    
-    for matrix in resulting_matrices:
         prob_matrix = prob(binary_matrix,p0,matrix)
-        cross_term_dict,no_cross_term_dict = check_cross_term_fast(prob_matrix,verbose=False,use_all_f=True)
-        if len(no_cross_term_dict) == 1:
-            print('-----------------------------------')
-            print(f"Matrix {i} is the case:")
-            print(matrix)
-        if i%50 == 0:
-            print(f"Finished search {i}th matrices")
-        i+=1
-    print("finished")
+        _, no_cross_term_dict = check_cross_term(prob_matrix)
+        layer_decom = layer_decomposition(matrix)
+        consistent = is_no_cross_term_dict_consistent_with_layers(layer_decom,no_cross_term_dict)
+        if consistent:
+            success_matrice.append(matrix)
+            print("Matrix is consistent with no cross term dict")
+            print(f"Matrix: \n{matrix}")
 
-def test5():
-    np.random.seed(1)
-    # W = np.array([[0,0,0, 1, 0, 1, 0],
-    #               [0,0,0,-1, 0, 0, 0],
-    #               [0,0,0, 1, 0, 0, 0],
-    #               [0,0,0, 0,-1, 0, 0],
-    #               [0,0,0, 0, 0, 1, 0],
-    #               [0,0,0, 0, 0, 0, 1],
-    #               [0,0,0, 0, 0, 0, 0]])
-    W = np.array([[0,0,0,1,1],
-                  [0,0,0,-2,-1],
-                  [0,0,0,1,1],
-                  [0,0,0,0,-1],
-                    [0,0,0,0,0]
-                 ])
+    print(f"Number of successful matrices: {len(success_matrice)}")
+    pprint.pprint(success_matrice)
+
+
+def test2():
+    np.random.seed(0)
+    W = np.array([[0, 0, 0, 0, 1],
+                  [0, 0, 0, 0, 1],
+                  [0, 0, 0, 0, 1],
+                  [0, 0, 0, 0, 1],
+                  [0, 0, 0, 0, 0]])
     d = W.shape[0]
     binary_matrix = generate_binary_matrix(d)
     p0 = np.random.uniform(low = 0.3, high = 0.7, size = (d))
     print(f"p0: {p0}")
     prob_matrix = prob(binary_matrix,p0,W)
-    all_f = get_all_f(prob_matrix)
-    pprint.pprint(all_f)
-
-def test6():
-    np.random.seed(1)
-    # W = np.array([[0,0,0, 1, 0, 1, 0, 0],
-    #               [0,0,0,-1, 0, 0, 0, 0],
-    #               [0,0,0, 1, 0, 0, 0, 0],
-    #               [0,0,0, 0,-1, 0, 0, 0],
-    #               [0,0,0, 0, 0, 1, 1, 0],
-    #               [0,0,0, 0, 0, 0, 1, 0],
-    #               [0,0,0, 0, 0, 0, 0,-1],
-    #               [0,0,0, 0, 0, 0, 0, 0]])
-
-    # W = np.array([[0,0,0, 1, 0, 1, 0],
-    #               [0,0,0,-1, 0, 0, 0],
-    #               [0,0,0, 1, 0, 0, 0],
-    #               [0,0,0, 0,-1, 0, 0],
-    #               [0,0,0, 0, 0, 1, 0],
-    #               [0,0,0, 0, 0, 0, 1],
-    #               [0,0,0, 0, 0, 0, 0]])
-
-    W = np.array([[0,0,0, 1, 0, 0],
-                  [0,0,0,-1, 1, 0],
-                  [0,0,0, 1, 0, 0],
-                  [0,0,0, 0, 1, 0],
-                  [0,0,0, 0, 0, 1],
-                  [0,0,0, 0, 0, 0]])
-    d = W.shape[0]
-    binary_matrix = generate_binary_matrix(d)
-    p0 = np.random.uniform(low = 0.3, high = 0.7, size = (d))
-    print(f"p0: {p0}")
-    prob_matrix = prob(binary_matrix,p0,W)
-    # all_f = get_all_f(prob_matrix)
-    # detail_dict = check_cross_term_topo_fast(topo = [0,1,2,3,4,5,7,6], prob_matrix=prob_matrix,all_f=all_f)
-    cross_term_dict,no_cross_term_dict = check_cross_term_fast(prob_matrix,verbose=False,use_all_f=False)
-    print(no_cross_term_dict)
-
-    
-
-
+    _, no_cross_term_dict = check_cross_term(prob_matrix)
+    layer_decom = layer_decomposition(W)
+    consistent = is_no_cross_term_dict_consistent_with_layers(layer_decom,no_cross_term_dict)
+    pprint.pprint(f"Consistent: {consistent}")
+    pprint.pprint(f"Layer decomposition: {layer_decom}")
+    # print(f"No cross term dict: {no_cross_term_dict}")
+    print("No cross term dict:")
+    pprint.pprint(f"{no_cross_term_dict}")
 if __name__ == '__main__':
-    # test2() 
-    test3(idx_full=[0,1,3,5],idx_partial=[0,3,5])
-    # test2_1(topo = [0,1,2,3,5,4])
-    # test6()
-    # test1(d = 6)
-    # test4()
-    # test4()
-    # test2()
-    # test3(idx_full=[0,1,6],idx_partial=[0,1,6])
-    # test5()
-
-
-
-
-
-    # check_cross_term(topo = [1,0,2], prob_matrix=prob_matrix)
-    # idx_full = [0,1,2]
-    # idx_partial = [0,1,2]
-    # f = get_f(binary_matrix=binary_matrix, prob_matrix=prob_matrix, idx_full=idx_full, idx_partial=idx_partial)
-    # print(f"id_full: {idx_full} \nidx_partial: {idx_partial} \n f: {f}")
-    # idx_full1 = [0,1,2,3]
-    # idx_partial1 = [0,1,3]
-
-    # idx_full2 = [0,1,3]
-    # idx_partial2 = [0,1,3]
-    # f_1 = get_f(binary_matrix=binary_matrix, 
-    #                    prob_matrix=prob_matrix, 
-    #                    idx_full=idx_full1, 
-    #                    idx_partial=idx_partial1)
-    # f_2 = get_f(binary_matrix=binary_matrix, 
-    #                    prob_matrix=prob_matrix, 
-    #                    idx_full=idx_full2, 
-    #                    idx_partial=idx_partial2)
-
-    # difference = f_1 - f_2
-    # print('Difference:',difference)
-
-    
+    test1(d = 5)
